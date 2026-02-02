@@ -1,30 +1,45 @@
 import speech_recognition as sr
 import time
 
-r = sr.Recognizer()
 
+def record_audio(recognizer: sr.Recognizer) -> str | None:
+    """
+    Records audio from microphone and converts it to text.
 
-def record_audio():
-
+    Returns:
+        Transcribed text if successful, else None
+    """
     with sr.Microphone() as source:
+        recognizer.adjust_for_ambient_noise(source, duration=0.5)
+        audio = recognizer.listen(source)
 
-        audio = r.listen(source)
-        try:
-            audio_data = r.recognize_google(audio)
-            print(audio_data)
-
-        except sr.UnknownValueError:
-            print('Sorry I did not understand it!')
-
-        except sr.RequestError:
-            print('Sorry currently not available!')
-        if audio_data == 'exit':
-            exit()
+    try:
+        return recognizer.recognize_google(audio)
+    except sr.UnknownValueError:
+        print("Could not understand the audio.")
+    except sr.RequestError:
+        print("Speech recognition service unavailable.")
+    return None
 
 
-time.sleep(1)
-print('SAY THE THING TOU WANT AS TEXT')
-while  1:
+def main():
+    recognizer = sr.Recognizer()
 
-    record_audio()
+    print("Say something (say 'exit' to quit)...")
+    time.sleep(1)
 
+    while True:
+        text = record_audio(recognizer)
+
+        if not text:
+            continue
+
+        print(f"Recognized text: {text}")
+
+        if text.lower() == "exit":
+            print("Exiting application.")
+            break
+
+
+if __name__ == "__main__":
+    main()
